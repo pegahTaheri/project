@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>نام‌نویسی</title>
+		<link rel="stylesheet" type="text/css" href="css/global.css">
+		<script src="js/jquery-1.11.3.js"></script>
+		<style type="text/css">
+			body *{
+				font-family: 'yekan';
+			}
+			#signup-container {
+				width:400px;
+				margin: 100px auto 0;
+			}
+			#file-chooser {
+				height: 30px;
+				cursor: pointer;
+				background: #007dfa;
+				border-radius: 10px;
+				padding: 0 10px;
+				color: #fff;
+			}
+			#file-chooser:hover {
+				color: #000;
+
+			}
+			input[type="submit"] {
+				width: 400px;
+				height:50px;
+				cursor: pointer;
+				margin-top: 10px;
+			}
+			/*input[type="submit"], p.details, h2 {
+				margin-left: 100px;
+			}*/
+			#status {
+				font-size: 0.8em;
+			}
+			#small-picture {
+				display: inline-block;
+				width: 32px;
+				height: 32px;
+				margin-right: 10px;
+				text-align: center;
+				font-size: 0.8em;
+				position: absolute;
+			}
+			.pass-check,#name-check,#lastname-check {
+				padding-right: 5px;
+				font-size: 0.8em;
+			}
+			form {
+				width: 550px;
+			}
+		</style>
+		<script>
+		console.log('pegah 5');
+		function onb() {
+			console.log("pegah");
+			$.ajax({
+				url: 'ajax/check_username.php',
+				type: 'GET',
+				data: {username: $('#username').val()},
+			})
+			.done(function(result) {
+				$('#status').html(result);
+			})
+		}
+			$(function() {
+				is_name_valid = false;
+				is_lastname_valid = false;
+				is_password_valid = false;
+				
+				$('input[required]').parents('p').each(function() {
+					$(this).children('label:first').html($(this).children('label:first').html() + ' <span style="color:red;"> * </span>');
+				});
+
+				/* $('#username').onblur = function onb() {
+					console.log("pegah");
+					$.ajax({
+						url: 'ajax/check_username.php',
+						type: 'GET',
+						data: {username: $('#username').val()},
+					})
+					.done(function(result) {
+						$('#status').html(result);
+					})
+				};
+ */
+				$('#username,#password').html('');
+
+				// $('#profile_picture').hide();
+				
+				$('input[type=submit]').addClass('disable').prop('disabled', true).click(function(event) {
+					event.preventDefault();
+					if ($('#status span').css('color') == 'rgb(0, 128, 0)' && is_password_valid && is_name_valid && is_lastname_valid ) {
+						// $('#profile_picture').attr('value', $('#small-picture').attr('src'));
+						// $('#profile_picture').attr('type', 'text');
+
+						username = $('#username').val();
+						password = $('#password').val();
+						user_name = $('#user_name').val();
+						user_lastname = $('#user_lastname').val();
+						user_id = $('#user_id').val();
+						user_hospital = $('#user_hospital').val();
+						user_email = $('#user_email').val();
+
+						$.ajax({
+							url: 'ajax/register.php',
+							type: 'POST',
+							dataType: 'html',
+							data: {	username: username,
+									password: password,
+									user_name: user_name,
+									user_lastname: user_lastname,
+									user_id: user_id,
+									user_hospital: user_hospital,
+									user_email: user_email
+									// profile_picture: profile_picture
+							},
+							success : function(data, status, jqxhr){
+								$('form,h2').fadeOut('fast', function() {
+									$('#signup-container').css({'position': 'relative', 'text-align' : 'center'}).html('<img src="css/images/loading.gif" class="loading-img"><div class="loading">در حال ارسال اطلاعات...</div>');
+								});
+								setTimeout(function(){
+									$('#signup-container div.loading').remove();
+									if (data == 'ok') {
+										$('#signup-container').append('<div class="ok">نام‌نویسی با موفقیت انجام شد! <br> تا چند لحظه‌ی دیگر به صفحه‌ی خانه منتقل می‌شوید.</div>');
+										setTimeout(function(){
+											window.location = '../client/html/home.php';
+										}, 2000);
+									}
+									else if (data == 'error') {
+										$('#signup-container').append('<div class="error">عملیات با شکست مواجه شد! <br> لطفا مجددا تلاش کنید.</div>');
+										setTimeout(function(){
+											window.location = './signup.html';
+										}, 2000);
+									}
+								}, 1000);
+							},
+						})
+					}
+				});	
+
+				$('input:password').keyup(function() {
+					$('.pass-check').remove();
+					if($.trim($(this).val()).length < 3) {
+						$(this).after('<span class="pass-check" style="color:red;">&#x2716; حداقل ۳ کاراکتر</span>');
+						is_password_valid = false;
+					}
+					else {
+						$(this).after('<span class="pass-check" style="color:green;">&#x2714; رمز قابل قبول است.</span>');
+						is_password_valid = true;
+					}
+					validateSubmit();
+				});
+
+				$('#user_name').keyup(function(event) {
+					$('#name-check').remove();
+					if ($(this).val().length > 1) {
+						is_name_valid = true;
+						$(this).after('<span id="name-check" style="color:green;">&#x2714;</span>');
+					}
+					else {
+						is_name_valid = false;
+						$(this).after('<span id="name-check" style="color:red">&#x2716; نامعتبر!</span>');
+					}
+					validateSubmit();
+				});	
+				$('#user_lastname').keyup(function(event) {
+					$('#lastname-check').remove();
+					if ($(this).val().length > 1) {
+						is_lastname_valid = true;
+						$(this).after('<span id="lastname-check" style="color:green;">&#x2714;</span>');
+					}
+					else {
+						is_lastname_valid = false;
+						$(this).after('<span id="lastname-check" style="color:red">&#x2716; نامعتبر!</span>');
+					}
+					validateSubmit();
+				});	
+			})
+			function validateSubmit(){
+				if(is_lastname_valid && is_name_valid && is_password_valid){
+					$('input[type=submit]').removeClass('disable').prop('disabled', false);
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<div id="signup-container">
+			<h2> نام‌نویسی در سایت </h2>
+			<form action="" method="post">
+				<!-- only for ignoring autocomplete -->
+				<input style="display:none">
+				<input type="password" style="display:none">
+				<!-- end -->
+				<p>
+					<label for="username">نام کاربری </label>
+					<label><input type="text" id="username" name="username" class="en" autocomplete="off" onblur ="onb();"required></label> <span id="status"></span>
+				</p>
+				<p>
+					<label for="password">رمز عبور </label>
+					<label><input type="password" id="password" name="password" class="en" autocomplete="off" required></label>
+				</p>
+				<p>
+					<label for="user_name">نام</label>
+					<label><input type="text" id="user_name" name="user_name" class="fa" required></label>
+				</p>
+				<p>
+					<label for="user_lastname">نام خانوادگی </label>
+					<label><input type="text" id="user_lastname" name="user_lastname" class="fa" required></label>
+				</p>
+				<p>
+					<label for="user_id">شماره نظام پزشکی</label>
+					<label><input type="text" id="user_id" name="user_id" class="fa" required></label>
+				</p>
+				<p>
+					<label for="user_hospital">نام بیمارستان</label>
+					<label><input type="text" id="user_hospital" name="user_hospital" class="fa" required></label>
+				</p>
+				<p>
+					<label for="user_email">ایمیل</label>
+					<label><input type="text" id="user_email" name="user_email" class="fa" required></label>
+				</p>
+				<!-- <p id="file-field">
+					<label for="profile_picture">تصویر </label>
+					<label>
+						<input type="file" id="profile_picture" name="profile_picture" value="" class="en" required>
+						<span id="file-chooser">انتخاب کن!</span>
+						<img src="" id="small-picture" alt="نمایه">
+					</label>
+				</p> -->
+				<p id="submit">
+					<input type="submit" value="مرا ثبت نام کن!">
+				</p>
+				<p class="details">&#x26a0; تکمیل فیلدهای ستاره‌دار اجباری است.</p>
+			</form>
+		</div>
+	</body>
+</html>
